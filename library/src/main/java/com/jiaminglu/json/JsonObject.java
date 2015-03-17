@@ -33,9 +33,9 @@ public class JsonObject {
         int array_size() default -1;
         boolean optional() default false;
     }
-    public interface JsonHelper {
-        public void init(JsonObject target, JSONObject object) throws JSONException;
-        public JSONObject toJSON(JsonObject target) throws JSONException;
+    public static abstract class JsonHelper {
+        public abstract void init(JsonObject target, JSONObject object) throws JSONException;
+        public abstract JSONObject toJSON(JsonObject target) throws JSONException;
     }
     public <T extends JsonObject> T init(JSONObject object) throws JSONException {
         getHelper().init(this, object);
