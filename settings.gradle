@@ -1,0 +1,6 @@
+rootProject.name = 'MixJ'
+
+include 'demo'
+
+include 'library'
+
