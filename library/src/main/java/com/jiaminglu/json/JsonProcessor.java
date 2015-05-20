@@ -8,7 +8,6 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -78,7 +77,7 @@ public class JsonProcessor extends AbstractProcessor {
                     JsonObject.JsonField jsonField = element.getAnnotation(JsonObject.JsonField.class);
                     if (!jsonField.date_format().equals(JsonObject.JsonField.NULL)) {
                         w.println(String.format("    static java.text.SimpleDateFormat %s_$format = new java.text.SimpleDateFormat(\"%s\");", name, jsonField.date_format()));
-                        if (!jsonField.date_timezone().equals(JsonObject.JsonField.NULL)) {
+                        if (!jsonField.date_timezone().equals(JsonObject.JsonField.NULL) && !jsonField.date_timezone().startsWith("$")) {
                             w.println(String.format("    static { %s_$format.setTimeZone(java.util.TimeZone.getTimeZone(\"%s\")); }", name, jsonField.date_timezone()));
                         }
                     }
@@ -146,6 +145,9 @@ public class JsonProcessor extends AbstractProcessor {
                 || type.equals("double") || type.equals("java.lang.Double")) {
             return in;
         } else if (type.equals("java.util.Date")) {
+            if (!jsonField.date_timezone().equals(JsonObject.JsonField.NULL) && jsonField.date_timezone().startsWith("$")) {
+                w.println(String.format("%s_$format.setTimeZone(java.util.TimeZone.getTimeZone(target.%s));", name, jsonField.date_timezone().substring(1)));
+            }
             return String.format("%s_$format.format(%s)", name, in);
         } else if (type.endsWith("[]")) {
             w.println(    String.format("            org.json.JSONArray outArray%d = new org.json.JSONArray();", i));
@@ -188,6 +190,9 @@ public class JsonProcessor extends AbstractProcessor {
         } else if (type.equals("java.util.Date")) {
             w.println(String.format("            java.util.Date date;"));
             w.println(String.format("            try {"));
+            if (!jsonField.date_timezone().equals(JsonObject.JsonField.NULL) && jsonField.date_timezone().startsWith("$")) {
+                w.println(String.format("                %s_$format.setTimeZone(java.util.TimeZone.getTimeZone(object.getString(\"%s\")));", name, jsonField.date_timezone().substring(1)));
+            }
             w.println(String.format("                date = %s_$format.parse((java.lang.String)%s);", name, in));
             w.println(String.format("            } catch (java.text.ParseException e) {"));
             w.println(String.format("                throw new org.json.JSONException(e);"));
