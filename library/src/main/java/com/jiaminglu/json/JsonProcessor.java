@@ -124,6 +124,7 @@ public class JsonProcessor extends AbstractProcessor {
                 w.println(                      "        return object;");
                 w.println(                      "    }");
                 w.println(                      "}");
+            } catch (javax.annotation.processing.FilerException e) {
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
